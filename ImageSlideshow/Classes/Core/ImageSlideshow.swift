@@ -28,7 +28,7 @@ public protocol ImageSlideshowDelegate: class {
     @objc optional func imageSlideshowDidEndDecelerating(_ imageSlideshow: ImageSlideshow)
 }
 
-/** 
+/**
     Used to represent position of the Page Control
     - hidden: Page Control is hidden
     - insideScrollView: Page Control is inside image slideshow
@@ -249,6 +249,7 @@ open class ImageSlideshow: UIView {
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.showsVerticalScrollIndicator = false
         scrollView.autoresizingMask = autoresizingMask
+        
         if UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft {
             scrollView.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi))
         }
@@ -540,6 +541,21 @@ open class ImageSlideshow: UIView {
      - returns: FullScreenSlideshowViewController instance
      */
     @discardableResult
+    open func returnFullScreenController(completion: (() -> Void)? = nil) -> FullScreenSlideshowViewController {
+        let fullscreen = FullScreenSlideshowViewController()
+        fullscreen.pageSelected = {[weak self] (page: Int) in
+            self?.setCurrentPage(page, animated: false)
+        }
+
+        fullscreen.initialPage = currentPage
+        fullscreen.inputs = images
+        slideshowTransitioningDelegate = ZoomAnimatedTransitioningDelegate(slideshowView: self, slideshowController: fullscreen)
+        fullscreen.transitioningDelegate = slideshowTransitioningDelegate
+        fullscreen.modalPresentationStyle = .custom
+
+        return fullscreen
+    }
+    
     open func presentFullScreenController(from controller: UIViewController, completion: (() -> Void)? = nil) -> FullScreenSlideshowViewController {
         let fullscreen = FullScreenSlideshowViewController()
         fullscreen.pageSelected = {[weak self] (page: Int) in

@@ -14,7 +14,8 @@ open class FullScreenSlideshowViewController: UIViewController {
         let slideshow = ImageSlideshow()
         slideshow.zoomEnabled = true
         slideshow.contentScaleMode = UIViewContentMode.scaleAspectFit
-        slideshow.pageIndicatorPosition = PageIndicatorPosition(horizontal: .center, vertical: .bottom)
+        slideshow.pageIndicator = nil
+        slideshow.pageIndicatorPosition = PageIndicatorPosition(horizontal: .center, vertical: .top)
         // turns off the timer
         slideshow.slideshowInterval = 0
         slideshow.autoresizingMask = [UIViewAutoresizing.flexibleWidth, UIViewAutoresizing.flexibleHeight]
@@ -22,7 +23,8 @@ open class FullScreenSlideshowViewController: UIViewController {
         return slideshow
     }()
 
-    /// Close button 
+    public var pageLabel = UILabel()
+    /// Close button
     open var closeButton = UIButton()
 
     /// Close button frame
@@ -34,7 +36,7 @@ open class FullScreenSlideshowViewController: UIViewController {
     /// Index of initial image
     open var initialPage: Int = 0
 
-    /// Input sources to 
+    /// Input sources to
     open var inputs: [InputSource]?
 
     /// Background color
@@ -61,7 +63,10 @@ open class FullScreenSlideshowViewController: UIViewController {
 
     override open func viewDidLoad() {
         super.viewDidLoad()
-
+        slideshow.delegate = self
+        pageLabel.textColor = .white
+        pageLabel.font = UIFont.systemFont(ofSize: 18)
+        pageLabel.text = "\(initialPage + 1) / \(inputs?.count ?? 0)"
         view.backgroundColor = backgroundColor
         slideshow.backgroundColor = backgroundColor
 
@@ -72,9 +77,14 @@ open class FullScreenSlideshowViewController: UIViewController {
         view.addSubview(slideshow)
 
         // close button configuration
-        closeButton.setImage(UIImage(named: "ic_cross_white", in: .module, compatibleWith: nil), for: UIControlState())
+        closeButton.setImage(#imageLiteral(resourceName: "iconClose-1"), for: UIControl.State.normal)
         closeButton.addTarget(self, action: #selector(FullScreenSlideshowViewController.close), for: UIControlEvents.touchUpInside)
         view.addSubview(closeButton)
+        
+        view.addSubview(pageLabel)
+        pageLabel.translatesAutoresizingMaskIntoConstraints = false
+        pageLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        pageLabel.centerYAnchor.constraint(equalTo: closeButton.centerYAnchor).isActive = true
     }
 
     override open var prefersStatusBarHidden: Bool {
@@ -121,5 +131,11 @@ open class FullScreenSlideshowViewController: UIViewController {
         }
 
         dismiss(animated: true, completion: nil)
+    }
+}
+
+extension FullScreenSlideshowViewController: ImageSlideshowDelegate {
+    public func imageSlideshow(_ imageSlideshow: ImageSlideshow, didChangeCurrentPageTo page: Int) {
+        self.pageLabel.text = "\(page + 1) / \(inputs?.count ?? 0)"
     }
 }
